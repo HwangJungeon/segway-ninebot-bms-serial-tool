@@ -18,6 +18,9 @@ def parse_fw_version(word: int) -> str:
     d = word & 0xF
     return f"{a}.{b}.{c}.{d}"
 
+def to_int16(word: int) -> int:
+    return word if word < 0x8000 else word - 0x10000
+
 def parse_packet(hex_or_bytes) -> Dict[str, Any]:
     if isinstance(hex_or_bytes, str):
         b = bytes.fromhex(hex_or_bytes.replace(' ', ''))
@@ -89,8 +92,9 @@ def parse_packet(hex_or_bytes) -> Dict[str, Any]:
             if len(words) >= 3:
                 parsed['fields']['BAT_REMAINING_CAP_PERCENT'] = words[2]
             if len(words) >= 4:
-                parsed['fields']['BAT_CURRENT_raw'] = words[3]
-                parsed['fields']['BAT_CURRENT_A'] = words[3] * 0.01
+                raw_current = to_int16(words[3])
+                parsed['fields']['BAT_CURRENT_raw'] = raw_current
+                parsed['fields']['BAT_CURRENT_A'] = raw_current * 0.01
             if len(words) >= 5:
                 parsed['fields']['BAT_VOLTAGE_raw'] = words[4]
                 parsed['fields']['BAT_VOLTAGE_V'] = words[4] * 0.01
